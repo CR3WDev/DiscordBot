@@ -8,6 +8,7 @@ defmodule Bot.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      Bot.Consumer
       # Starts a worker by calling: Bot.Worker.start_link(arg)
       # {Bot.Worker, arg}
     ]
