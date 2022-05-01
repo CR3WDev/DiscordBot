@@ -8,11 +8,28 @@ defmodule Bot.Consumer do
     end
 
     def handle_event({:MESSAGE_CREATE,msg,_ws_state}) do
-        case msg.content do
-            "!ping" -> Api.create_message(msg.channel_id,"pong")
-            "!poesia" -> Api.create_message(msg.channel_id,"Á mão da punheta é a mesma da poesia. ambas me levam o gozo. uma traz alivio a alma a outra o corpo. todo poeta é um punheteiro nato. quando não a masturba sentimentos, ideias, egos de outros. a porra de um poeta jorra em forma de palavras. tem gente que engole e outras que cospem.")
-             _-> :ignore
+        cond do
+            String.starts_with?(msg.content,"!tempo") -> handleWeather(msg)
+            msg.content == "!tempo" -> Api.create_message(msg.channel_id, "Use **!tempo <nome-da-cidade>** ")
         end
+    end
+    defp handleWeather(msg) do
+        aux = String.split(msg.content, "",parts: 2)
+        cidade = Enum.fetch!(aux, 1)
+
+        resp = HTTPoison.get!("https://api.openweathermap.org/data/2.5/weather?q=#{cidade}&appid=5708f8391084ab65db5f444ca3cfd3a1&units=metric&lang=pt_br")
+
+        {:ok, map} = Poison.decode(resp.body)
+
+        case map["cod"] do 
+            200 ->
+                temp = map["main"]["temp"]
+                Api.create_message(msg.channel_id, "a temporatura da cidade #{cidade} é de #{temp}")
+            
+            "404" ->
+                Api.create_message(msg.channel_id, "A cidade #{cidade} não foi encontrada!. Tente novamente!")
+        end
+        
     end
 
     def handle_event(_event) do
