@@ -16,7 +16,6 @@ defmodule Bot.Consumer do
             String.starts_with?(msg.content,"!bank position ") -> handleRank(msg)
             String.starts_with?(msg.content,"!bank change ") -> handlechange24(msg)
             String.starts_with?(msg.content,"!bank record ") -> handleRecord(msg)
-            String.starts_with?(msg.content,"!bank quanto ") -> handleQuanto(msg)
             msg.content == "!bank" -> handleHelp(msg)
         end
     end
