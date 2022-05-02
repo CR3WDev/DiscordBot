@@ -111,7 +111,7 @@ defmodule Bot.Consumer do
 
        if map["symbol"] !== nil do
         amount = map["market_data"]["current_price"]["brl"]
-        Api.create_message(msg.channel_id, "o valor do #{crypto} agora é R$ #{amount} ")
+        Api.create_message(msg.channel_id, "o valor do #{crypto} agora é R$ **#{amount}** ")
                 
        else
         Api.create_message(msg.channel_id, "#{crypto} não foi encontrado. Tente novamente!")
@@ -147,7 +147,7 @@ defmodule Bot.Consumer do
         if map1["symbol"] !== nil && map2["symbol"] do
             amount1 = map1["market_data"]["current_price"]["brl"]
             amount2 = map2["market_data"]["current_price"]["brl"]
-            Api.create_message(msg.channel_id, "#{crypto1} menos #{crypto2} é = R$ #{amount1 - amount2}")
+            Api.create_message(msg.channel_id, "#{crypto1} menos #{crypto2} é = R$ **#{amount1 - amount2}**")
         else
             Api.create_message(msg.channel_id, "por favor, digite 2 cryptomoedas válidas")
         end
@@ -175,7 +175,7 @@ defmodule Bot.Consumer do
         symbol = map["symbol"]
         if symbol !== nil do
              currentValue = map["market_data"]["current_price"]["brl"]
-            Api.create_message(msg.channel_id, "R$ #{quantity} em #{crypto} da #{Float.round(quantity/currentValue, 5)} #{String.upcase(symbol)}")
+            Api.create_message(msg.channel_id, "R$ **#{quantity} em #{crypto}** da **#{Float.round(quantity/currentValue, 5)}** #{String.upcase(symbol)}")
         else
             Api.create_message(msg.channel_id, "por favor, digite 2 cryptomoedas válidas")
         end
@@ -192,7 +192,7 @@ defmodule Bot.Consumer do
         case map["cod"] do 
             200 ->
                 temp = map["main"]["temp"]
-                Api.create_message(msg.channel_id, "a temporatura da cidade #{cidade} é de #{temp}")
+                Api.create_message(msg.channel_id, "a temporatura da cidade #{cidade} é de **#{temp}**")
             
             "404" ->
                 Api.create_message(msg.channel_id, "A cidade #{cidade} não foi encontrada!. Tente novamente!")
