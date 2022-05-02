@@ -28,7 +28,7 @@ defmodule Bot.Consumer do
         Api.create_message(msg.channel_id, "Comandos: \n 
         Use **!bank get <nome-da-crypto>** para pegar seu valor em brl \n
         Use **!bank image <nome-da-crypto>** para pegar sua imagem \n
-        Use **!bank image <nome-da-crypto> <nome-da-crypto2>** para pegar a diferença da primeira pela segunda \n
+        Use **!bank difference <nome-da-crypto> <nome-da-crypto2>** para pegar a diferença da primeira pela segunda \n
         Use **!bank top** para pegar as 5 cryptos mais comercializadas \n
         Use **!bank position <nome-da-crypto>** para pegar o ranking da crypto \n
         Use **!bank change <nome-da-crypto>** para pegar a variação da crypto \n
