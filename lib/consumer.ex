@@ -16,6 +16,8 @@ defmodule Bot.Consumer do
             String.starts_with?(msg.content,"!bank position ") -> handleRank(msg)
             String.starts_with?(msg.content,"!bank change ") -> handlechange24(msg)
             String.starts_with?(msg.content,"!bank record ") -> handleRecord(msg)
+            String.starts_with?(msg.content,"!bank amount ") -> handleGetAmount(msg)
+            String.starts_with?(msg.content,"!bank temp ") -> handleWeather(msg)
             msg.content == "!bank" -> handleHelp(msg)
         end
     end
@@ -33,6 +35,7 @@ defmodule Bot.Consumer do
         Use **!bank position <nome-da-crypto>** para pegar o ranking da crypto \n
         Use **!bank change <nome-da-crypto>** para pegar a variação da crypto \n
         Use **!bank record <nome-da-crypto>** para pegar o maior valor que ela atingiu \n
+        Use **!bank temp <cidade>** pega a temperatura em celcius \n
          ")
     end
 
@@ -161,5 +164,41 @@ defmodule Bot.Consumer do
         4 - #{Enum.fetch!(map,3)["name"]} \n
         5 - #{Enum.fetch!(map,4)["name"]} \n")
     end
+
+    def handleGetAmount(msg) do
+        aux = String.split(msg.content, " ", parts: 4)
+        quantity = String.to_integer(Enum.fetch!(aux, 2))
+        crypto = Enum.fetch!(aux, 3)
+
+        resp = HTTPoison.get!("https://api.coingecko.com/api/v3/coins/bitcoin")
+        {:ok, map} = Poison.decode(resp.body)
+        symbol = map["symbol"]
+        if symbol !== nil do
+             currentValue = map["market_data"]["current_price"]["brl"]
+            Api.create_message(msg.channel_id, "R$ #{quantity} em #{crypto} da #{Float.round(quantity/currentValue, 5)} #{String.upcase(symbol)}")
+        else
+            Api.create_message(msg.channel_id, "por favor, digite 2 cryptomoedas válidas")
+        end
+    end
+
+    defp handleWeather(msg) do
+        aux = String.split(msg.content, " ",parts: 3)
+        cidade = Enum.fetch!(aux, 2)
+
+        resp = HTTPoison.get!("https://api.openweathermap.org/data/2.5/weather?q=#{cidade}&appid=5708f8391084ab65db5f444ca3cfd3a1&units=metric&lang=pt_br")
+
+        {:ok, map} = Poison.decode(resp.body)
+
+        case map["cod"] do 
+            200 ->
+                temp = map["main"]["temp"]
+                Api.create_message(msg.channel_id, "a temporatura da cidade #{cidade} é de #{temp}")
+            
+            "404" ->
+                Api.create_message(msg.channel_id, "A cidade #{cidade} não foi encontrada!. Tente novamente!")
+        end
+        
+    end
+
 
 end
