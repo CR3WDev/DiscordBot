@@ -2,6 +2,8 @@
 
 **TODO: Add description**
 
+<!-- Marcelo Victor Tavora Neves e Davi Tavares Frota -->
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed

@@ -13,12 +13,12 @@ defmodule Bot.Consumer do
             String.starts_with?(msg.content,"!bank image") -> handleGetImage(msg)
             String.starts_with?(msg.content,"!bank difference") -> handleGetBest(msg)
             String.starts_with?(msg.content,"!bank top") -> handleGetTop(msg)
-            String.starts_with?(msg.content,"!bank position ") -> handleRank(msg)
-            String.starts_with?(msg.content,"!bank change ") -> handlechange24(msg)
-            String.starts_with?(msg.content,"!bank record ") -> handleRecord(msg)
             String.starts_with?(msg.content,"!bank amount ") -> handleGetAmount(msg)
-            String.starts_with?(msg.content,"!bank temp ") -> handleWeather(msg)
+            String.starts_with?(msg.content,"!age ") -> handleAge(msg)
+            String.starts_with?(msg.content,"!email ") -> handleVerifyEmail(msg)
             msg.content == "!bank" -> handleHelp(msg)
+            msg.content == "!duck" -> handleDuck(msg)
+            msg.content == "!cn" -> handleChuckNorris(msg)
         end
     end
 
@@ -32,73 +32,7 @@ defmodule Bot.Consumer do
         Use **!bank image <nome-da-crypto>** para pegar sua imagem \n
         Use **!bank difference <nome-da-crypto> <nome-da-crypto2>** para pegar a diferença da primeira pela segunda \n
         Use **!bank top** para pegar as 5 cryptos mais comercializadas \n
-        Use **!bank position <nome-da-crypto>** para pegar o ranking da crypto \n
-        Use **!bank change <nome-da-crypto>** para pegar a variação da crypto \n
-        Use **!bank record <nome-da-crypto>** para pegar o maior valor que ela atingiu \n
-        Use **!bank temp <cidade>** pega a temperatura em celcius \n
          ")
-    end
-
-    defp handleRank(msg) do
-        aux = String.split(msg.content, " ",parts: 3)
-        crypto = Enum.fetch!(aux, 2)
-
-        resp = HTTPoison.get!("https://api.coingecko.com/api/v3/coins/#{crypto}")
-
-        {:ok, map} = Poison.decode(resp.body)
-
-        rank = map["market_cap_rank"]
-
-        if  map["market_cap_rank"] !== nil do
-            Api.create_message(msg.channel_id, "O rank do #{crypto} é **#{rank}**")
-
-        else
-            Api.create_message(msg.channel_id, "Essa crypto não está listada no nosso ranqueamento")    
-
-        end
-            
-    end
-
-    defp handlechange24(msg) do
-        aux = String.split(msg.content, " ",parts: 3)
-        crypto = Enum.fetch!(aux, 2)
-
-        resp = HTTPoison.get!("https://api.coingecko.com/api/v3/coins/#{crypto}")
-
-        {:ok, map1} = Poison.decode(resp.body)
-        {:ok, map2} = Poison.decode(resp.body)
-        
-
-        price = map1["market_data"]["price_change_24h_in_currency"]["brl"]
-        prices = map2["market_data"]["price_change_percentage_24h"]
-
-        if  map1["market_data"]["price_change_24h_in_currency"]["brl"] !== nil do
-            Api.create_message(msg.channel_id, "A Moeda teve uma variação em 24hrs de **#{prices}%** ou seja **#{price}** reais")
-
-        else
-            Api.create_message(msg.channel_id, "Não conseguimos achar essa crypto, por favor verifique a nomeclatura ")    
-
-        end
-            
-    end
-
-    defp handleRecord(msg) do
-        aux = String.split(msg.content, " ",parts: 3)
-        crypto = Enum.fetch!(aux, 2)
-
-        resp = HTTPoison.get!("https://api.coingecko.com/api/v3/coins/#{crypto}")
-
-        {:ok, map} = Poison.decode(resp.body)
-
-         record = map["market_data"]["ath"]["brl"]
-
-        if  map["market_data"]["ath"]["brl"] !== nil do
-            Api.create_message(msg.channel_id, "A alta record de #{crypto} é **#{record}** reais")
-
-        else
-            Api.create_message(msg.channel_id, "Essa crypto não está listada")    
-
-        end
     end
 
     defp handleCurrentValue(msg) do
@@ -181,24 +115,53 @@ defmodule Bot.Consumer do
         end
     end
 
-    defp handleWeather(msg) do
-        aux = String.split(msg.content, " ",parts: 3)
-        cidade = Enum.fetch!(aux, 2)
-
-        resp = HTTPoison.get!("https://api.openweathermap.org/data/2.5/weather?q=#{cidade}&appid=5708f8391084ab65db5f444ca3cfd3a1&units=metric&lang=pt_br")
-
+    def handleDuck(msg) do
+        resp = HTTPoison.get!("https://random-d.uk/api/v2/random")
         {:ok, map} = Poison.decode(resp.body)
+        duckImage = map["url"]
 
-        case map["cod"] do 
-            200 ->
-                temp = map["main"]["temp"]
-                Api.create_message(msg.channel_id, "a temporatura da cidade #{cidade} é de **#{temp}**")
-            
-            "404" ->
-                Api.create_message(msg.channel_id, "A cidade #{cidade} não foi encontrada!. Tente novamente!")
-        end
-        
+        Api.create_message(msg.channel_id, duckImage)
     end
 
+    def handleChuckNorris(msg) do
+        resp = HTTPoison.get!("http://api.icndb.com/jokes/random")
+        {:ok, map} = Poison.decode(resp.body)
+        joke = map["value"]["joke"]
+
+        Api.create_message(msg.channel_id, joke)
+    end
+    
+    def handleAge(msg) do
+        aux = String.split(msg.content, " ", parts: 2)
+        firstName = Enum.fetch!(aux, 1)
+        resp = HTTPoison.get!("https://api.agify.io/?name=#{firstName}")
+        {:ok, map} = Poison.decode(resp.body)
+        age = map["age"]
+        name = map["name"]
+        cond do
+            age < 20 ->
+                Api.create_message(msg.channel_id, "pro nosso sistema **#{name}** ainda é um bebezinho de #{age} vá estudar")
+            age >= 20 && age < 30 ->
+                Api.create_message(msg.channel_id, "**#{name}**, você é um(a) novinho(a) de #{age}")
+            age >= 30 && age < 40 ->
+                Api.create_message(msg.channel_id, "**#{name}**, você tem #{age}, já ta numa idade de casar eim ")
+            age >= 40 && age < 60 ->
+                Api.create_message(msg.channel_id, "**#{name}**, você já viveu bastante e tem #{age}, tá na hora de se endividar!! ")
+            age >= 60  ->
+                Api.create_message(msg.channel_id, "**#{name}** é nome de quem sobreviveu por vários #{age} anos e vai viver pra sempre!!  ")
+        end
+    end
+    def handleVerifyEmail(msg) do 
+        aux = String.split(msg.content, " ", parts: 2)
+        email = Enum.fetch!(aux, 1)
+        resp = HTTPoison.get!("https://www.disify.com/api/email/#{email}")
+        {:ok, map} = Poison.decode(resp.body)
+        isValidEmail = map["format"]
+        if isValidEmail do
+            Api.create_message(msg.channel_id, "**#{email}** é um email válido")
+        else
+            Api.create_message(msg.channel_id, "**#{email}** não é um email válido")
+        end
+    end
 
 end
