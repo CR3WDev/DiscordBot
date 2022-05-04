@@ -16,8 +16,8 @@ defmodule Bot.Consumer do
             String.starts_with?(msg.content,"!bank amount ") -> handleGetAmount(msg)
             String.starts_with?(msg.content,"!age ") -> handleAge(msg)
             String.starts_with?(msg.content,"!email ") -> handleVerifyEmail(msg)
+            String.starts_with?(msg.content,"!address ") -> handleGetAdressById(msg)
             msg.content == "!bank" -> handleHelp(msg)
-            msg.content == "!duck" -> handleDuck(msg)
             msg.content == "!cn" -> handleChuckNorris(msg)
         end
     end
@@ -115,12 +115,18 @@ defmodule Bot.Consumer do
         end
     end
 
-    def handleDuck(msg) do
-        resp = HTTPoison.get!("https://random-d.uk/api/v2/random")
+    def handleGetAdressById(msg) do
+        aux = String.split(msg.content, " ", parts: 2)
+        ip = Enum.fetch!(aux, 1)
+        resp = HTTPoison.get!("https://api.ipbase.com/v2/info?apikey=yGIxtfzGiVVX7Z2FotRmWjXquiRFyCGJu47LWKGT&ip=#{ip}")
         {:ok, map} = Poison.decode(resp.body)
-        duckImage = map["url"]
+        location = map["data"]["timezone"]["id"]
 
-        Api.create_message(msg.channel_id, duckImage)
+        if location do
+            Api.create_message(msg.channel_id, "o elemento do ip=#{ip} é de **#{location}**")
+        else
+            Api.create_message(msg.channel_id, "o elemento do ip=#{ip} não foi encontrado")
+        end
     end
 
     def handleChuckNorris(msg) do
